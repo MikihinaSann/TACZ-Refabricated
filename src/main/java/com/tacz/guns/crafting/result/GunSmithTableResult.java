@@ -4,7 +4,10 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapLike;
 import com.tacz.guns.GunMod;
+import com.tacz.guns.resource.serialize.ItemStackParser;
 import com.tacz.guns.resource.pojo.data.block.TabConfig;
 import com.tacz.guns.resource.pojo.data.recipe.GunResult;
 import net.minecraft.core.HolderLookup;
@@ -55,9 +58,9 @@ public class GunSmithTableResult {
                     result = new GunSmithTableResult(raw, tabOverride);
                 }
                 case GunSmithTableResult.CUSTOM -> {
-                    ItemStack itemStack = ItemStack.OPTIONAL_CODEC.fieldOf("item").decode(ops, map).getOrThrow();
+                    ItemStack itemStack = parseCustomResultItem(ops, map);
                     result = new GunSmithTableResult(itemStack, tabOverride);
-                    if (extraTag != null) {
+                    if (extraTag != null && !result.getResult().isEmpty()) {
                         result.getResult().update(DataComponents.CUSTOM_DATA, CustomData.EMPTY, data -> data.update(tag -> {
                             for (String key : extraTag.getAllKeys()) {
                                 Tag value = extraTag.get(key);
@@ -72,6 +75,28 @@ public class GunSmithTableResult {
             }
             return Pair.of(result, input);
         });
+    }
+
+    private static <T> ItemStack parseCustomResultItem(DynamicOps<T> ops, MapLike<T> map) {
+        T itemElement = map.get("item");
+        if (itemElement == null) {
+            return ItemStack.OPTIONAL_CODEC.fieldOf("item").decode(ops, map).getOrThrow();
+        }
+        ItemStack strict = ItemStack.OPTIONAL_CODEC.parse(ops, itemElement).result().orElse(null);
+        if (strict != null && !strict.isEmpty()) {
+            return strict;
+        }
+        try {
+            ItemStack legacy = ItemStackParser.parse(ops.convertTo(JsonOps.INSTANCE, itemElement));
+            if (!legacy.isEmpty()) {
+                return legacy;
+            }
+        } catch (Exception ignored) {
+        }
+        if (strict != null) {
+            return strict;
+        }
+        return ItemStack.OPTIONAL_CODEC.parse(ops, itemElement).getOrThrow();
     }
 
     public static final String GUN = "gun";

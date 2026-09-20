@@ -489,7 +489,7 @@ public class GunSmithTableScreen extends AbstractContainerScreen<GunSmithTableMe
         if (pMouseX > leftPos + 143 && pMouseX < leftPos + 143 + 94 && pMouseY > topPos + 66 && pMouseY < topPos + 66 + 85) {
             if (pScrollY > 0) {
                 this.indexPage = Math.max(0, this.indexPage - 1);
-            } else {
+            } else if (selectedRecipeList != null && !selectedRecipeList.isEmpty()) {
                 int maxIndexPage = (selectedRecipeList.size() - 1) / 6;
                 this.indexPage = Math.min(maxIndexPage, this.indexPage + 1);
             }
@@ -615,10 +615,11 @@ public class GunSmithTableScreen extends AbstractContainerScreen<GunSmithTableMe
                 Ingredient ingredient = smithTableIngredient.getIngredient();
 
                 ItemStack[] items = ingredient.getItems();
-                int itemIndex = ((int) (System.currentTimeMillis() / 1_000)) % items.length;
-                ItemStack item = items[itemIndex];
-
-                gui.renderFakeItem(item, offsetX, offsetY);
+                if (items.length > 0) {
+                    int itemIndex = ((int) (System.currentTimeMillis() / 1_000)) % items.length;
+                    ItemStack item = items[itemIndex];
+                    gui.renderFakeItem(item, offsetX, offsetY);
+                }
 
                 PoseStack poseStack = gui.pose();
                 poseStack.pushPose();

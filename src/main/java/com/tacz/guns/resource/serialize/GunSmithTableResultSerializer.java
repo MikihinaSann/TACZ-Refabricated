@@ -57,8 +57,8 @@ public class GunSmithTableResultSerializer implements JsonDeserializer<GunSmithT
                     result = new GunSmithTableResult(raw, tabOverride);
                 }
                 case GunSmithTableResult.CUSTOM -> {
-                    JsonObject resultObject = GsonHelper.getAsJsonObject(jsonObject, "item");
-                    ItemStack itemStack = ItemStack.CODEC.parse(JsonOps.INSTANCE, resultObject).getOrThrow();
+                    JsonElement resultElement = jsonObject.get("item");
+                    ItemStack itemStack = resultElement != null ? ItemStackParser.parse(resultElement) : ItemStack.EMPTY;
                     result = new GunSmithTableResult(itemStack, tabOverride);
                 }
                 default -> {

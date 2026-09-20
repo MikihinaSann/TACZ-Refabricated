@@ -1,13 +1,13 @@
 package com.tacz.guns.resource.pojo.data.block;
 
 import com.google.gson.*;
-import com.mojang.serialization.JsonOps;
 import com.tacz.guns.GunMod;
 import com.tacz.guns.api.DefaultAssets;
 import com.tacz.guns.api.item.builder.AmmoItemBuilder;
 import com.tacz.guns.api.item.builder.AttachmentItemBuilder;
 import com.tacz.guns.api.item.builder.GunItemBuilder;
 import com.tacz.guns.init.ModItems;
+import com.tacz.guns.resource.serialize.ItemStackParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -69,7 +69,7 @@ public record TabConfig(ResourceLocation id, String name, ItemStack icon) {
                 throw new JsonParseException("TabConfig must have an id");
             }
             ResourceLocation id = context.deserialize(object.get("id"), ResourceLocation.class);
-            ItemStack icon = ItemStack.CODEC.parse(JsonOps.INSTANCE, GsonHelper.getAsJsonObject(object, "icon")).getOrThrow();
+            ItemStack icon = object.has("icon") ? ItemStackParser.parse(object.get("icon")) : ItemStack.EMPTY;
             String name = GsonHelper.getAsString(object, "name", "tacz.type.unknown.name");
             return new TabConfig(id, name, icon);
         }
