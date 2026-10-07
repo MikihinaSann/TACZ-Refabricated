@@ -77,18 +77,23 @@ public final class RenderHelper {
         // int oldId = RenderSystem.getShaderTexture(0);
         // RenderSystem.setShaderTexture(0, player.getSkinTextureLocation());
 
-        if (ARCompat.shouldAccelerate()) {
+        boolean accelerated = ARCompat.shouldAccelerate();
+        if (accelerated) {
             ARCompat.setRenderingLevel();
+            ARCompat.disableAcceleration();
         }
 
-        if (hand == HumanoidArm.RIGHT) {
-            renderer.renderRightHand(matrixStack, buffer, combinedLight, player);
-        } else {
-            renderer.renderLeftHand(matrixStack, buffer, combinedLight, player);
-        }
-
-        if (ARCompat.shouldAccelerate()) {
-            ARCompat.resetRenderingLevel();
+        try {
+            if (hand == HumanoidArm.RIGHT) {
+                renderer.renderRightHand(matrixStack, buffer, combinedLight, player);
+            } else {
+                renderer.renderLeftHand(matrixStack, buffer, combinedLight, player);
+            }
+        } finally {
+            if (accelerated) {
+                ARCompat.resetAcceleration();
+                ARCompat.resetRenderingLevel();
+            }
         }
 
         // RenderSystem.setShaderTexture(0, oldId);

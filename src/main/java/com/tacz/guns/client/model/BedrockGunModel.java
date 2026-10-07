@@ -74,11 +74,14 @@ public class BedrockGunModel extends BedrockAnimatedModel {
         this.additionalMagazineNode = Optional.ofNullable(modelMap.get(MAG_ADDITIONAL_NODE)).map(ModelRendererWrapper::getModelRenderer).orElse(null);
 
         // 左手手臂
-        this.setFunctionalRenderer(LEFTHAND_POS_NODE, bedrockPart -> new LeftHandRender(this));
+        LeftHandRender leftHandRender = new LeftHandRender(this);
+        this.setFunctionalRenderer(LEFTHAND_POS_NODE, bedrockPart -> leftHandRender);
         // 右手手臂
-        this.setFunctionalRenderer(RIGHTHAND_POS_NODE, bedrockPart -> new RightHandRender(this));
+        RightHandRender rightHandRender = new RightHandRender(this);
+        this.setFunctionalRenderer(RIGHTHAND_POS_NODE, bedrockPart -> rightHandRender);
         // 枪口火焰
-        this.setFunctionalRenderer(MUZZLE_FLASH_ORIGIN_NODE, bedrockPart -> new MuzzleFlashRender(this));
+        MuzzleFlashRender muzzleFlashRender = new MuzzleFlashRender(this);
+        this.setFunctionalRenderer(MUZZLE_FLASH_ORIGIN_NODE, bedrockPart -> muzzleFlashRender);
         // 枪管内的子弹，用于闭膛待机枪械
         this.setFunctionalRenderer(BULLET_IN_BARREL, bedrockPart -> ammoHiddenRender(bedrockPart, iGun -> iGun.hasBulletInBarrel(currentGunItem)));
         // 弹匣内子弹
@@ -174,9 +177,10 @@ public class BedrockGunModel extends BedrockAnimatedModel {
             }
             String positionNodeName = type.name().toLowerCase() + ATTACHMENT_POS_SUFFIX;
             String defaultNodeName = type.name().toLowerCase() + DEFAULT_ATTACHMENT_SUFFIX;
+            AttachmentRender attachmentRender = new AttachmentRender(this, type);
             this.setFunctionalRenderer(positionNodeName, bedrockPart -> {
                 bedrockPart.visible = false;
-                return new AttachmentRender(this, type);
+                return attachmentRender;
             });
             this.setFunctionalRenderer(defaultNodeName, bedrockPart -> {
                 ItemStack attachmentItem = currentAttachmentItem.get(type);
@@ -240,7 +244,10 @@ public class BedrockGunModel extends BedrockAnimatedModel {
      * 添加枪械自定义的文本显示
      */
     public void setTextShowList(Map<String, TextShow> textShowList) {
-        textShowList.forEach((name, textShow) -> this.setFunctionalRenderer(name, bedrockPart -> new TextShowRender(this, textShow, currentGunItem)));
+        textShowList.forEach((name, textShow) -> {
+            TextShowRender textShowRender = new TextShowRender(this, textShow, this::getCurrentGunItem);
+            this.setFunctionalRenderer(name, bedrockPart -> textShowRender);
+        });
     }
 
     public void render(PoseStack matrixStack, ItemStack gunItem, ItemDisplayContext transformType, RenderType renderType, int light, int overlay) {

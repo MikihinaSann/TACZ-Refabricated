@@ -60,6 +60,14 @@ public class ARCompatImpl {
 		AcceleratedTextRenderingFeature.useVanillaPipeline();
 	}
 
+	public static void forceAcceleratedPipeline() {
+		AcceleratedEntityRenderingFeature.forceUseAcceleratedPipeline();
+	}
+
+	public static void resetForceAcceleratedPipeline() {
+		AcceleratedEntityRenderingFeature.resetPipeline();
+	}
+
 	public static void resetAcceleration() {
 		AcceleratedEntityRenderingFeature.resetPipeline();
 		AcceleratedItemRenderingFeature.resetPipeline();

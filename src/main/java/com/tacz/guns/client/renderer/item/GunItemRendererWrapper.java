@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.tacz.guns.api.TimelessAPI;
+import com.tacz.guns.compat.ar.ARCompat;
 import com.tacz.guns.api.client.animation.statemachine.LuaAnimationStateMachine;
 import com.tacz.guns.api.client.event.BeforeRenderHandEvent;
 import com.tacz.guns.api.client.gameplay.IClientPlayerGunOperator;
@@ -302,7 +303,24 @@ public class GunItemRendererWrapper extends AnimateGeoItemRenderer<BedrockGunMod
             applyScaleTransform(transformType, gunIndex.getTransform().getScale(), poseStack);
             // 渲染枪械模型
             RenderType renderType = RenderType.entityCutout(gunTexture);
-            gunModel.render(poseStack, stack, transformType, renderType, pPackedLight, pPackedOverlay);
+            // When the hosting entity is vanilla-filtered, the entity pipeline reports VANILLA.
+            // Force the accelerated pipeline just for the gun so third-person/ground/head renders
+            // still use the GPU path without accelerating the entity itself.
+            boolean forcedAccelerated = false;
+            if (ARCompat.LOADED && !ARCompat.shouldAccelerate()) {
+                ARCompat.forceAcceleratedPipeline();
+                forcedAccelerated = ARCompat.shouldAccelerate();
+                if (!forcedAccelerated) {
+                    ARCompat.resetForceAcceleratedPipeline();
+                }
+            }
+            try {
+                gunModel.render(poseStack, stack, transformType, renderType, pPackedLight, pPackedOverlay);
+            } finally {
+                if (forcedAccelerated) {
+                    ARCompat.resetForceAcceleratedPipeline();
+                }
+            }
         }, () -> {
             // 没有这个 gunID，渲染个错误材质提醒别人
             renderSlotTexture(poseStack, pBuffer, pPackedLight, pPackedOverlay, MissingTextureAtlasSprite.getLocation());

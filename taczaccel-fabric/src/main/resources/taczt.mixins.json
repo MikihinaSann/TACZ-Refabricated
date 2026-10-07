@@ -1,0 +1,42 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.admany.taczt.platform.fabric.mixin",
+  "plugin": "org.admany.taczt.platform.fabric.mixin.TacztMixinPlugin",
+  "refmap": "taczt.refmap.json",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BlockRayTraceMixin",
+    "EntityKineticBulletMixin",
+    "HitboxHelperMixin",
+    "LazyJsonDataManagerMixin"
+  ],
+  "client": [
+    "client.AttachmentRenderMixin",
+    "client.BedrockModelMixin",
+    "client.BedrockModelDelegateListMixin",
+    "client.BedrockPartMixin",
+    "client.FunctionalBedrockPartMixin",
+    "client.BedrockGunModelMixin",
+    "client.BedrockGunModelProfileMixin",
+    "client.BedrockGunModelSharedMixin",
+    "client.AcceleratedBedrockPartCacheMixin",
+    "client.AcceleratedRenderStateMixin",
+    "client.AcceleratedBeamRendererMixin",
+    "client.EntityBulletRendererMixin",
+    "client.EntityBulletRenderProfileMixin",
+    "client.GunItemRendererWrapperMixin",
+    "client.GunItemRenderProfileMixin",
+    "client.GunAnimationStateContextMixin",
+    "client.GunHudOverlayMixin",
+    "client.HandRenderMixin",
+    "client.PoseStackMixin",
+    "client.PoseStackPoseMixin",
+    "client.InternalAssetLoaderMixin",
+    "client.ClientIndexManagerMixin",
+    "client.TickAnimationEventMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

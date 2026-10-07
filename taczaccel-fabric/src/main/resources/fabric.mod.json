@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "taczaccelerated",
+  "version": "${version}",
+  "name": "TaCZ:Accel",
+  "description": "Performance addon for TaCZ that reduces CPU and memory overhead, improves rendering smoothness, fixes stability issues and routes safe background workloads through Quantified API V2.",
+  "authors": ["Admany"],
+  "license": "BRSSLA V1.6",
+  "icon": "taczr.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.admany.taczt.platform.fabric.TacztFabric"
+    ],
+    "client": [
+      "org.admany.taczt.platform.fabric.TacztFabricClient"
+    ]
+  },
+  "mixins": [
+    "taczt.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "minecraft": "1.21.1",
+    "tacz": "*",
+    "quantified": ">=2.1.0"
+  },
+  "suggests": {
+    "acceleratedrendering": "*",
+    "taczexpands": ">=1.1.4"
+  }
+}

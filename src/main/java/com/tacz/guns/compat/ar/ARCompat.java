@@ -62,6 +62,14 @@ public class ARCompat {
         if (LOADED) ARCompatImpl.resetAcceleration();
     }
 
+    public static void forceAcceleratedPipeline() {
+        if (LOADED) ARCompatImpl.forceAcceleratedPipeline();
+    }
+
+    public static void resetForceAcceleratedPipeline() {
+        if (LOADED) ARCompatImpl.resetForceAcceleratedPipeline();
+    }
+
     // 防止类意外加载 (直接在BeamRenderer类使用AcceleratedBeamRenderer.INSTANCE在会触发类加载)
     public static void renderLaser(
             VertexConsumer extension,

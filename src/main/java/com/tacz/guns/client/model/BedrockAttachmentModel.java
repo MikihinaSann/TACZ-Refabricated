@@ -146,8 +146,10 @@ public class BedrockAttachmentModel extends BedrockAnimatedModel {
      * 添加枪械自定义的文本显示
      */
     public void setTextShowList(Map<String, TextShow> textShowList) {
-        textShowList.forEach((name, textShow) -> this.setFunctionalRenderer(name,
-                bedrockPart -> new TextShowRender(this, textShow, currentGunItem)));
+        textShowList.forEach((name, textShow) -> {
+            TextShowRender textShowRender = new TextShowRender(this, textShow, () -> currentGunItem);
+            this.setFunctionalRenderer(name, bedrockPart -> textShowRender);
+        });
     }
 
     public void render(@Nullable ItemStack attachmentItem, ItemStack currentGunItem, PoseStack matrixStack, ItemDisplayContext transformType, RenderType renderType, int light, int overlay) {

@@ -1,0 +1,80 @@
+plugins {
+    id 'fabric-loom' version '1.11-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = "${archives_base_name}-${minecraft_version}"
+}
+
+loom {
+    mixin {
+        defaultRefmapName = "taczt.refmap.json"
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'ParchmentMC'
+        url = 'https://maven.parchmentmc.org'
+    }
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+    }
+    maven {
+        name = 'Fuzs Mod Resources'
+        url = 'https://raw.githubusercontent.com/Fuzss/modresources/main/maven/'
+    }
+    maven {
+        url = 'https://cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.layered() {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${project.parchment_minecraft_version}:${project.parchment_mappings_version}@zip")
+    }
+
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // APIs supplied by the TACZ-Refabricated workspace.
+    modCompileOnly "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:21.1.4"
+    modCompileOnly files("../libs/simplebedrockmodel-fabric-2.3.0.1+mc1.21.1.jar")
+    compileOnly files("../build/devlibs/TACZ-Refabricated-1.21.1-0.7.0-forge1.1.8-hotfix-dev.jar")
+
+    // Owner-provided runtime dependency. Omni 2.2.3 supports Fabric 1.21.1.
+    modImplementation "curse.maven:quantified-api-1397967:8830709"
+
+    // Optional rendering integration.
+    modCompileOnly "maven.modrinth:accrelatedrendering-refabricated:pgm8CkON"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+def targetJavaVersion = 21
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = targetJavaVersion
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    withSourcesJar()
+}

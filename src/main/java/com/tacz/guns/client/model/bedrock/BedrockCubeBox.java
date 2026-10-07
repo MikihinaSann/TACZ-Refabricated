@@ -6,8 +6,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.FastColor;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public class BedrockCubeBox implements BedrockCube {
     public final float minX;
@@ -78,21 +76,24 @@ public class BedrockCubeBox implements BedrockCube {
     public void compile(PoseStack.Pose pose, VertexConsumer consumer, int light, int overlay, float red, float green, float blue, float alpha) {
         Matrix4f matrix4f = pose.pose();
         Matrix3f matrix3f = pose.normal();
+        int packedColor = FastColor.ARGB32.colorFromFloat(alpha, red, green, blue);
 
         for (BedrockPolygon polygon : this.polygons) {
-            Vector3f vector3f = new Vector3f(polygon.normal);
-            vector3f.mul(matrix3f);
-            float nx = vector3f.x();
-            float ny = vector3f.y();
-            float nz = vector3f.z();
+            float pnx = polygon.normal.x();
+            float pny = polygon.normal.y();
+            float pnz = polygon.normal.z();
+            float nx = matrix3f.m00() * pnx + matrix3f.m10() * pny + matrix3f.m20() * pnz;
+            float ny = matrix3f.m01() * pnx + matrix3f.m11() * pny + matrix3f.m21() * pnz;
+            float nz = matrix3f.m02() * pnx + matrix3f.m12() * pny + matrix3f.m22() * pnz;
 
             for (BedrockVertex vertex : polygon.vertices) {
                 float x = vertex.pos.x() / 16.0F;
                 float y = vertex.pos.y() / 16.0F;
                 float z = vertex.pos.z() / 16.0F;
-                Vector4f vector4f = new Vector4f(x, y, z, 1.0F);
-                vector4f.mul(matrix4f);
-                consumer.addVertex(vector4f.x(), vector4f.y(), vector4f.z(), FastColor.ARGB32.colorFromFloat(alpha, red, green, blue), vertex.u, vertex.v, overlay, light, nx, ny, nz);
+                float tx = matrix4f.m00() * x + matrix4f.m10() * y + matrix4f.m20() * z + matrix4f.m30();
+                float ty = matrix4f.m01() * x + matrix4f.m11() * y + matrix4f.m21() * z + matrix4f.m31();
+                float tz = matrix4f.m02() * x + matrix4f.m12() * y + matrix4f.m22() * z + matrix4f.m32();
+                consumer.addVertex(tx, ty, tz, packedColor, vertex.u, vertex.v, overlay, light, nx, ny, nz);
             }
         }
     }

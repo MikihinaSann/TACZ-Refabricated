@@ -14,6 +14,7 @@
     "common.ArmorStandMixin",
     "common.BlockBehaviourMixin",
     "common.BundlePacketMixin",
+    "common.CreativeModeTabsMixin",
     "common.EntityMixin",
     "common.LivingEntityMixin",
     "common.LootTableMixin",

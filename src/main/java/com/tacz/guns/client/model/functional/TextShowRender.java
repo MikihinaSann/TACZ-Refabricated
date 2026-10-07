@@ -17,15 +17,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
+import java.util.function.Supplier;
+
 public class TextShowRender implements IFunctionalRenderer {
+    private static final long TEXT_EVAL_INTERVAL_MS = 100L;
+
     private final BedrockModel bedrockModel;
     private final TextShow textShow;
-    private final ItemStack gunStack;
+    private final Supplier<ItemStack> gunStackSupplier;
+    private String cachedText = "";
+    private int cachedXOffset;
+    private long lastEvalMillis;
 
-    public TextShowRender(BedrockModel bedrockModel, TextShow textShow, ItemStack gunStack) {
+    public TextShowRender(BedrockModel bedrockModel, TextShow textShow, Supplier<ItemStack> gunStackSupplier) {
         this.bedrockModel = bedrockModel;
         this.textShow = textShow;
-        this.gunStack = gunStack;
+        this.gunStackSupplier = gunStackSupplier;
     }
 
     @Override
@@ -33,8 +40,26 @@ public class TextShowRender implements IFunctionalRenderer {
         if (!transformType.firstPerson()) {
             return;
         }
-        String text = PapiManager.getTextShow(textShow.getTextKey(), gunStack);
-        if (StringUtils.isBlank(text)) {
+        long now = System.currentTimeMillis();
+        if (now - lastEvalMillis >= TEXT_EVAL_INTERVAL_MS) {
+            lastEvalMillis = now;
+            ItemStack gunStack = gunStackSupplier.get();
+            String text = gunStack == null ? "" : PapiManager.getTextShow(textShow.getTextKey(), gunStack);
+            if (StringUtils.isBlank(text)) {
+                text = "";
+            }
+            if (!text.equals(cachedText)) {
+                cachedText = text;
+                Font font = Minecraft.getInstance().font;
+                int width = font.width(text);
+                cachedXOffset = switch (textShow.getAlign()) {
+                    case CENTER -> width / 2;
+                    case RIGHT -> width;
+                    default -> 0;
+                };
+            }
+        }
+        if (cachedText.isEmpty()) {
             return;
         }
         poseStack.mulPose(Axis.ZP.rotationDegrees(180f));
@@ -48,13 +73,6 @@ public class TextShowRender implements IFunctionalRenderer {
             int color = textShow.getColorInt();
             float scale = textShow.getScale();
             int packLight = LightTexture.pack(textShow.getTextLight(), textShow.getTextLight());
-            int width = font.width(text);
-            int xOffset;
-            switch (textShow.getAlign()) {
-                case CENTER -> xOffset = width / 2;
-                case RIGHT -> xOffset = width;
-                default -> xOffset = 0;
-            }
 
             PoseStack poseStack2 = new PoseStack();
             poseStack2.last().normal().mul(normal);
@@ -62,8 +80,7 @@ public class TextShowRender implements IFunctionalRenderer {
             poseStack2.scale(2 / 300f * scale, -2 / 300f * scale, -2 / 300f);
 
             MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-            font.drawInBatch(text, -xOffset, -font.lineHeight / 2f, color, shadow, poseStack2.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, packLight);
-            bufferSource.endBatch();
+            font.drawInBatch(cachedText, -cachedXOffset, -font.lineHeight / 2f, color, shadow, poseStack2.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, packLight);
         });
     }
 }

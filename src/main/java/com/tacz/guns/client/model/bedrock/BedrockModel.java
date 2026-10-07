@@ -368,6 +368,12 @@ public class BedrockModel {
         for (IFunctionalRenderer renderer : delegateRenderers) {
             renderer.render(matrixStack, builder, transformType, light, overlay);
         }
+        // Flush once after all delegates instead of letting each delegate flush the shared
+        // buffer source itself (text delegates previously triggered a full endBatch per part).
+        if (!delegateRenderers.isEmpty()) {
+            bufferSource.endBatch();
+        }
+        // taczaccel redirects this allocation to clear+reuse the previous list.
         delegateRenderers = new ArrayList<>();
     }
 
